@@ -10,7 +10,7 @@ This package uses Golang assembly. The AVX512 version is based on the Intel's "m
 
 ## New: Support for Intel SHA Extensions
 
-Support for the Intel SHA Extensions has been added by Kristofer Peterson (@svenski123), originally developed for spacemeshos [here](https://github.com/spacemeshos/POET/issues/23). On CPUs that support it (known thus far Intel Celeron J3455 and AMD Ryzen) it gives a significant boost in performance (with thanks to @AudriusButkevicius for reporting the results; full results [here](https://github.com/minio/sha256-simd/pull/37#issuecomment-451607827)).
+Support for the Intel SHA Extensions has been added by Kristofer Peterson (@svenski123), originally developed for spacemeshos [here](https://github.com/spacemeshos/POET/issues/23). On CPUs that support it (known thus far Intel Celeron J3455 and AMD Ryzen) it gives a significant boost in performance (with thanks to @AudriusButkevicius for reporting the results; full results [here](https://github.com/zcs-seu/sha256-simd/pull/37#issuecomment-451607827)).
 
 ```
 $ benchcmp avx2.txt sha-ext.txt
@@ -36,10 +36,10 @@ Transposing the input messages means that in order to take full advantage of the
 
 Whereas the original Intel C implementation requires some sort of explicit scheduling of messages to be processed in parallel, for Golang it makes sense to take advantage of channels in order to group messages together and use channels as well for sending back the results (thereby effectively decoupling the calculations). We have implemented a fairly simple scheduling mechanism that seems to work well in practice.
 
-Due to this different way of scheduling, we decided to use an explicit method to instantiate the AVX512 version. Essentially one or more AVX512 processing servers ([`Avx512Server`](https://github.com/minio/sha256-simd/blob/master/sha256blockAvx512_amd64.go#L294)) have to be created whereby each server can hash over 3 GB/s on a single core. An `hash.Hash` object ([`Avx512Digest`](https://github.com/minio/sha256-simd/blob/master/sha256blockAvx512_amd64.go#L45)) is then instantiated using one of these servers and used in the regular fashion:
+Due to this different way of scheduling, we decided to use an explicit method to instantiate the AVX512 version. Essentially one or more AVX512 processing servers ([`Avx512Server`](https://github.com/zcs-seu/sha256-simd/blob/master/sha256blockAvx512_amd64.go#L294)) have to be created whereby each server can hash over 3 GB/s on a single core. An `hash.Hash` object ([`Avx512Digest`](https://github.com/zcs-seu/sha256-simd/blob/master/sha256blockAvx512_amd64.go#L45)) is then instantiated using one of these servers and used in the regular fashion:
 
 ```go
-import "github.com/minio/sha256-simd"
+import "github.com/zcs-seu/sha256-simd"
 
 func main() {
 	server := sha256.NewAvx512Server()
@@ -58,10 +58,10 @@ More detailed information can be found in this [blog](https://blog.minio.io/acce
 
 ## Drop-In Replacement
 
-The following code snippet shows how you can use `github.com/minio/sha256-simd`. This will automatically select the fastest method for the architecture on which it will be executed.
+The following code snippet shows how you can use `github.com/zcs-seu/sha256-simd`. This will automatically select the fastest method for the architecture on which it will be executed.
 
 ```go
-import "github.com/minio/sha256-simd"
+import "github.com/zcs-seu/sha256-simd"
 
 func main() {
         ...
@@ -86,17 +86,17 @@ Below is the speed in MB/s for a single core (ranked fast to slow) for blocks la
 
 ## asm2plan9s
 
-In order to be able to work more easily with AVX512/AVX2 instructions, a separate tool was developed to convert SIMD instructions into the corresponding BYTE sequence as accepted by Go assembly. See [asm2plan9s](https://github.com/minio/asm2plan9s) for more information.
+In order to be able to work more easily with AVX512/AVX2 instructions, a separate tool was developed to convert SIMD instructions into the corresponding BYTE sequence as accepted by Go assembly. See [asm2plan9s](https://github.com/zcs-seu/asm2plan9s) for more information.
 
 ## Why and benefits
 
-One of the most performance sensitive parts of the [Minio](https://github.com/minio/minio) object storage server is related to SHA256 hash sums calculations. For instance during multi part uploads each part that is uploaded needs to be verified for data integrity by the server.
+One of the most performance sensitive parts of the [Minio](https://github.com/zcs-seu/minio) object storage server is related to SHA256 hash sums calculations. For instance during multi part uploads each part that is uploaded needs to be verified for data integrity by the server.
 
 Other applications that can benefit from enhanced SHA256 performance are deduplication in storage systems, intrusion detection, version control systems, integrity checking, etc.
 
 ## ARM SHA Extensions
 
-The 64-bit ARMv8 core has introduced new instructions for SHA1 and SHA2 acceleration as part of the [Cryptography Extensions](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0501f/CHDFJBCJ.html). Below you can see a small excerpt highlighting one of the rounds as is done for the SHA256 calculation process (for full code see [sha256block_arm64.s](https://github.com/minio/sha256-simd/blob/master/sha256block_arm64.s)).
+The 64-bit ARMv8 core has introduced new instructions for SHA1 and SHA2 acceleration as part of the [Cryptography Extensions](http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0501f/CHDFJBCJ.html). Below you can see a small excerpt highlighting one of the rounds as is done for the SHA256 calculation process (for full code see [sha256block_arm64.s](https://github.com/zcs-seu/sha256-simd/blob/master/sha256block_arm64.s)).
 
  ```
  sha256h    q2, q3, v9.4s

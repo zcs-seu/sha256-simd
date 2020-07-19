@@ -28,7 +28,7 @@
 //    Tim Chen <tim.c.chen@linux.intel.com>
 //
 // For Golang it has been converted to Plan 9 assembly with the help of
-// github.com/minio/asm2plan9s to assemble Intel instructions to their Plan9
+// github.com/zcs-seu/asm2plan9s to assemble Intel instructions to their Plan9
 // equivalents
 //
 
